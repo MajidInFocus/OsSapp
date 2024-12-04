@@ -237,6 +237,15 @@ error_label.grid(row=3, column=0, pady=10, padx=10)
 # Assign functionality to the button
 generate_button.config(command=generate_table)
 
+
+
+#Create a function to open the WindowThree AND pass the data to the to it
+'''
+Things to be carried out:
+    1. Collects Input: Collects processor count, algorithm, and process details.
+    2. Stores Data: Stores the collected data in a global variable shared_data for transfer.
+    3. Passes Data: Sends the data to WindowThree via the simulate button. Let me know when you're ready to handle WindowThree.
+'''
 # After collecting data in open_simulation_window():
 def open_simulation_window():
     try:
@@ -287,16 +296,9 @@ simulate_button = Button(
 )
 simulate_button.grid(row=4, column=0, pady=20, padx=10, sticky="w")
 
-#Create a function to open the WindowThree AND pass the data to the to it
-'''
-Things to be carried out:
-    1. Collects Input: Collects processor count, algorithm, and process details.
-    2. Stores Data: Stores the collected data in a global variable shared_data for transfer.
-    3. Passes Data: Sends the data to WindowThree via the simulate button. Let me know when you're ready to handle WindowThree.
-'''
-
-# Assign functionality to the button
+#call the function to open the simulation window
 simulate_button.config(command=open_simulation_window)
+
     
 
 

@@ -215,19 +215,19 @@ def generate_table():
     except Exception as e:
         Label(table, text=f"Error: {str(e)}", width=30).grid(row=0, column=0)
 
-def update_averages(scheduler):
-    total_ct = sum(p.completion_time for p in scheduler.processes)
-    total_tat = sum(p.turnaround_time for p in scheduler.processes)
-    total_wt = sum(p.waiting_time for p in scheduler.processes)
-    n = len(scheduler.processes)
-    
-    avg_entries = frame4.grid_slaves()
-    avg_entries[4].delete(0, END)
-    avg_entries[4].insert(0, f"{total_ct/n:.2f}")
-    avg_entries[2].delete(0, END) 
-    avg_entries[2].insert(0, f"{total_tat/n:.2f}")
-    avg_entries[0].delete(0, END)
-    avg_entries[0].insert(0, f"{total_wt/n:.2f}")
+    def update_averages(scheduler):
+        total_ct = sum(p.completion_time for p in scheduler.processes)
+        total_tat = sum(p.turnaround_time for p in scheduler.processes)
+        total_wt = sum(p.waiting_time for p in scheduler.processes)
+        n = len(scheduler.processes)
+        
+        avg_entries = frame4.grid_slaves()
+        avg_entries[4].delete(0, END)
+        avg_entries[4].insert(0, f"{total_ct/n:.2f}")
+        avg_entries[2].delete(0, END) 
+        avg_entries[2].insert(0, f"{total_tat/n:.2f}")
+        avg_entries[0].delete(0, END)
+        avg_entries[0].insert(0, f"{total_wt/n:.2f}")
 
 # Call the method to generate the table
 generate_table()
