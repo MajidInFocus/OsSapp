@@ -1,12 +1,19 @@
 from tkinter import *
 from PIL import ImageTk, Image
 
+shared_data = {
+    "process_data": [],
+    "scheduler": None,
+    "algorithm": None,
+    "selected_algorithm": None
+}
+
 # Initialize the Tkinter window
 window2 = Tk()
 window2.title("Homepage")
 window2.configure(bg="white")
 window2.resizable(False, False)
-window_width, window_height = 1000, 750
+window_width, window_height = 1200, 900  # Increased from 1000, 750
 # Center the window on the screen
 screen_width, screen_height = window2.winfo_screenwidth(), window2.winfo_screenheight()
 center_x, center_y = (screen_width - window_width) // 2, (screen_height - window_height) // 2
@@ -52,7 +59,7 @@ subtitle_label = Label(
 subtitle_label.grid(row=1, column=0, pady=0, sticky="n")
 
 # Image Section
-image = Image.open("/Users/majid/Desktop/operating systems/OSaPP/assets/logo1.png")
+image = Image.open("testimonial-1.png")
 image = image.resize((300, 300), Image.LANCZOS)
 image_tk = ImageTk.PhotoImage(image)
 image_label = Label(header_container, image=image_tk, bg="white")
@@ -62,7 +69,7 @@ image_label.grid(row=2, column=0, pady=30, sticky="n")
 
 # A frame to hold the user input section and the button to generate the table
 input_container = Frame(window2, bg="white")
-input_container.grid(row=1, column=1, pady=20, padx=20, sticky="n")
+input_container.grid(row=1, column=1, pady=30, padx=40, sticky="n")  # Increased padding
 # Label 1: Processor
 processor_label = Label(
     input_container,
@@ -75,7 +82,7 @@ processor_label.grid(row=0, column=0, pady=10, columnspan=2, sticky="w")
 # Input Box for Processor
 processor_entry = Entry(input_container, 
                         font=("Arial", 16), 
-                        width=20, 
+                        width=25,  # Increased from 20
                         bg="white", fg="black",
                         bd=2, relief="groove")
 
@@ -111,12 +118,12 @@ algorithm_options = [
 algorithm_var = StringVar(window2)
 algorithm_var.set("Select")  # Default value
 algorithm_dropdown = OptionMenu(input_container, algorithm_var, *algorithm_options)
-algorithm_dropdown.config(font=("Arial", 16), width=40)
+algorithm_dropdown.config(font=("Arial", 16), width=45)  # Increased from 40
 algorithm_dropdown.grid(row=2, column=1, pady=10, padx=10, sticky="w")
 
 # Button to Generate Table
 # Create label for the info icon to be placed in the button "info"
-gen_icon = Image.open("/Users/majid/Desktop/operating systems/OSaPP/assets/Generate.png")
+gen_icon = Image.open("testimonial-1.png")
 gen_icon = gen_icon.resize((300, 150), Image.LANCZOS)
 gen_icon_tk = ImageTk.PhotoImage(gen_icon)
 
@@ -133,7 +140,7 @@ generate_button.grid(row=3, column=1, columnspan=2, pady=10, padx=10, sticky="w"
 
 # A frame to hold the dynamic data section
 data_container = Frame(window2, bg="white")
-data_container.grid(row=2, column=1, pady=20, padx=10, sticky="n")
+data_container.grid(row=2, column=1, pady=30, padx=30, sticky="n")  # Increased padding
 # Instruction Label
 instruction_label = Label(
     data_container,
@@ -187,7 +194,6 @@ def generate_table():
 
         elif selected_algorithm in [
             "Preemptive (Non-Priority)",
-            "Preemptive (Priority)"
         ]:
             # Clear previous table contents
             for widget in table_frame1.winfo_children(): widget.destroy()
@@ -231,11 +237,41 @@ error_label.grid(row=3, column=0, pady=10, padx=10)
 # Assign functionality to the button
 generate_button.config(command=generate_table)
 
+# After collecting data in open_simulation_window():
+def open_simulation_window():
+    try:
+        # Get inputs
+        num_processes = int(processor_entry.get())
+        selected_algorithm = algorithm_var.get()
+        
+        # Initialize scheduler and process data list
+        from cpu_scheduler import CPUScheduler
+        scheduler = CPUScheduler()
+        process_data = []
+        
+        # Process table data...
+        # ... (keep existing table processing code)
+        
+        # Update shared data BEFORE importing WindowThree
+        global shared_data 
+        shared_data.update({
+            "scheduler": scheduler,
+            "algorithm": selected_algorithm,
+            "process_data": process_data,
+            "selected_algorithm": selected_algorithm
+        })
+        
+        # Now import WindowThree
+        window2.destroy()
+        import WindowThree
+        WindowThree.window3.mainloop()
 
+    except ValueError as e:
+        error_label.config(text=f"Error: {str(e)}", fg="red")
 
 #================================================================================================
 # create a label for image to be placed in the button "simulate"
-simulate_icon = Image.open("/Users/majid/Desktop/operating systems/OSaPP/assets/Simulate.png")
+simulate_icon = Image.open("testimonial-1.png")
 simulate_icon = simulate_icon.resize((300, 150), Image.LANCZOS)
 simulate_icon_tk = ImageTk.PhotoImage(simulate_icon)
 
@@ -258,62 +294,16 @@ Things to be carried out:
     2. Stores Data: Stores the collected data in a global variable shared_data for transfer.
     3. Passes Data: Sends the data to WindowThree via the simulate button. Let me know when you're ready to handle WindowThree.
 '''
-def open_simulation_window():
-    # Declare process_entries as a global variable
-    global process_entries 
-    process_entries = [] 
-    
-    try:
-        # Collect number of processes and selected algorithm
-        num_processes = int(processor_entry.get())
-        if num_processes <= 0 or num_processes > 10:
-            raise ValueError("Number of processes must be between 1 and 10.")
-        
-        selected_algorithm = algorithm_var.get()
-        if selected_algorithm == "Select":
-            raise ValueError("Please select a scheduling algorithm.")
-
-        # Collect table data (process details: AT, BT, Priority if applicable)
-        process_data = []
-        if selected_algorithm in ["SJF (Non-Preemptive)", "SJF (Preemptive)", "RR"]:
-            # Access Entry widgets for AT and BT
-            for row_entries in process_entries:  # Assuming process_entries is tracked globally
-                arrival_time = row_entries[0].get()  
-                burst_time = row_entries[1].get()  
-                process_data.append([arrival_time, burst_time])
-        
-        elif selected_algorithm in ["Preemptive (Non-Priority)", "Preemptive (Priority)"]:
-            # Access Entry widgets for Priority, AT, and BT
-            for row_entries in process_entries:  
-                priority = row_entries[0].get()  # Priority
-                arrival_time = row_entries[1].get()  # Arrival Time
-                burst_time = row_entries[2].get()  # Burst Time
-                process_data.append([priority, arrival_time, burst_time])
-
-        # Store the collected data in a global variable for transfer
-        global shared_data
-        shared_data = {
-            "num_processes": num_processes,
-            "selected_algorithm": selected_algorithm,
-            "process_data": process_data
-        }
-
-        # Transition to WindowThree
-        window2.destroy()
-        import WindowThree
-        WindowThree.window3.mainloop(shared_data)  # Assumes WindowThree has this function
-    except ValueError as e:
-        error_label.config(text=f"Error: {e}", fg="red")
-
 
 # Assign functionality to the button
 simulate_button.config(command=open_simulation_window)
     
 
 
+
 #Create an info button about table generation and its headings abreveations
 # Create label for the info icon to be placed in the button "info"
-info_icon = Image.open("/Users/majid/Desktop/operating systems/OSaPP/assets/info.png")
+info_icon = Image.open("testimonial-1.png")
 info_icon = info_icon.resize((320, 80), Image.LANCZOS)
 info_icon_tk = ImageTk.PhotoImage(info_icon)
 
