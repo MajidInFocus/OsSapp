@@ -273,7 +273,7 @@ def open_simulation_window():
         # Now import WindowThree
         window2.destroy()
         import WindowThree
-        WindowThree.window3.mainloop()
+        WindowThree.window3.mainloop(shared_data)
 
     except ValueError as e:
         error_label.config(text=f"Error: {str(e)}", fg="red")
