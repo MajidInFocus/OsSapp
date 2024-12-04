@@ -18,7 +18,7 @@ window1.geometry(f"{window_width}x{window_height}+{center_x}+{center_y}")
 
 
 # Load, resize, and set logo image
-logo = Image.open("/Users/majid/Desktop/operating systems/OSaPP/assets/logo1.png")
+logo = Image.open("testimonial-1.png")
 resized_logo = logo.resize((550, 450))
 resized_logo_photo = ImageTk.PhotoImage(resized_logo)
 logo_label = Label(window1, image=resized_logo_photo, bg="white").grid(row = 0, column = 0, pady = 10, sticky = "n")

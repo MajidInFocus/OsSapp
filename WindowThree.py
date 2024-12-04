@@ -1,6 +1,23 @@
 from tkinter import *
 from PIL import ImageTk, Image
-from WindowTwo import shared_data
+import sys
+
+# Import shared data with proper fallback and initialization check
+try:
+    from WindowTwo import shared_data
+    if not shared_data["scheduler"]:
+        raise ImportError("No scheduler data")
+except (ImportError, KeyError):
+    print("No data available, returning to Window Two")
+    import WindowTwo
+    WindowTwo.window2.mainloop()
+    sys.exit()
+
+# Initialize variables from shared data
+process_data = shared_data.get('process_data', [])
+scheduler = shared_data.get('scheduler')
+selected_algorithm = shared_data.get('selected_algorithm')
+
 #CPU Scheduling Algorithms
 #SJF (Non-Preemptive)
 def sjf_non_preemptive(processes):
@@ -115,8 +132,6 @@ def preemptive_priority(processes):
     return result
 #Declare a dictionary to store shared data
 shared_data = {}
-#Get the process data 
-process_data = shared_data['process_data']
 # Initialize the Tkinter window
 window3 = Tk()
 window3.title("Process Page")
@@ -159,30 +174,61 @@ def generate_table():
     for widget in table.winfo_children():
         widget.destroy()
 
-    # Table headings
-    headings = ["ID", "AT", "BT", "CT", "TAT", "WT"]
-    for i, heading in enumerate(headings):
-        Label(table, text=heading, width=10, relief="solid").grid(row=0, column=i)
+    try:
+        scheduler = shared_data.get('scheduler')
+        algorithm = shared_data.get('algorithm')
+        
+        if not scheduler or not algorithm:
+            Label(table, text="No data available", width=30).grid(row=0, column=0)
+            return
 
-    # Fetch data and apply the selected algorithm
-    process_data = shared_data['process_data']
-    selected_algorithm = shared_data['selected_algorithm']
+        # Run selected algorithm
+        if algorithm == "SJF (Non-Preemptive)":
+            results = scheduler.sjf_nonpreemptive()
+        elif algorithm == "SJF (Preemptive)":
+            results = scheduler.sjf_preemptive()
+        elif algorithm == "RR":
+            results = scheduler.round_robin()
+        elif algorithm in ["Preemptive (Non-Priority)", "Preemptive (Priority)"]:
+            results = scheduler.priority_scheduling(preemptive=True)
 
-    if selected_algorithm == "SJF (Non-Preemptive)":
-        results = sjf_non_preemptive(process_data)
-    elif selected_algorithm == "SJF (Preemptive)":
-        results = sjf_preemptive(process_data)
-    elif selected_algorithm == "RR":
-        results = round_robin(process_data)
-    elif selected_algorithm == "Preemptive (Priority)":
-        results = preemptive_priority(process_data)
-    else:
-        raise ValueError("Unsupported algorithm selected.")
+        # Display results in table
+        headings = ["ID", "AT", "BT", "CT", "TAT", "WT"]
+        for i, heading in enumerate(headings):
+            Label(table, text=heading, width=10, relief="solid").grid(row=0, column=i)
 
-    # Display results in the table
-    for i, row in enumerate(results):
-        for j, value in enumerate(row):
-            Label(table, text=value, width=10, relief="solid").grid(row=i + 1, column=j)
+        for i, process in enumerate(scheduler.processes):
+            values = [
+                process.pid,
+                process.arrival_time,
+                process.burst_time,
+                process.completion_time,
+                process.turnaround_time,
+                process.waiting_time
+            ]
+            for j, value in enumerate(values):
+                Label(table, text=value, width=10, relief="solid").grid(row=i+1, column=j)
+
+        # Update averages
+        update_averages(scheduler)
+        
+    except Exception as e:
+        Label(table, text=f"Error: {str(e)}", width=30).grid(row=0, column=0)
+
+def update_averages(scheduler):
+    total_ct = sum(p.completion_time for p in scheduler.processes)
+    total_tat = sum(p.turnaround_time for p in scheduler.processes)
+    total_wt = sum(p.waiting_time for p in scheduler.processes)
+    n = len(scheduler.processes)
+    
+    avg_entries = frame4.grid_slaves()
+    avg_entries[4].delete(0, END)
+    avg_entries[4].insert(0, f"{total_ct/n:.2f}")
+    avg_entries[2].delete(0, END) 
+    avg_entries[2].insert(0, f"{total_tat/n:.2f}")
+    avg_entries[0].delete(0, END)
+    avg_entries[0].insert(0, f"{total_wt/n:.2f}")
+
 # Call the method to generate the table
 generate_table()
 
@@ -201,23 +247,30 @@ def generate_ready_queue():
     # Clear existing canvas
     canvas.delete("all")
 
-    # Fetch and process data for the ready queue
-    process_data = shared_data['process_data']
-    selected_algorithm = shared_data['selected_algorithm']
+    try:
+        # Fetch and process data for the ready queue
+        process_data = shared_data.get('process_data', [])
+        selected_algorithm = shared_data.get('selected_algorithm')
 
-    if selected_algorithm in ["SJF (Non-Preemptive)", "SJF (Preemptive)", "RR", "Preemptive (Priority)"]:
-        results = sjf_non_preemptive(process_data) if selected_algorithm == "SJF (Non-Preemptive)" else \
-                  sjf_preemptive(process_data) if selected_algorithm == "SJF (Preemptive)" else \
-                  round_robin(process_data) if selected_algorithm == "RR" else \
-                  preemptive_priority(process_data)
+        if not process_data or not selected_algorithm:
+            return
 
-        # Draw ready queue
-        x_offset = 10
-        for process in results:
-            process_id = process[0]
-            canvas.create_rectangle(x_offset, 50, x_offset + 50, 100, fill="blue")
-            canvas.create_text(x_offset + 25, 75, text=process_id, fill="white")
-            x_offset += 60     
+        if selected_algorithm in ["SJF (Non-Preemptive)", "SJF (Preemptive)", "RR", "Preemptive (Priority)"]:
+            results = sjf_non_preemptive(process_data) if selected_algorithm == "SJF (Non-Preemptive)" else \
+                      sjf_preemptive(process_data) if selected_algorithm == "SJF (Preemptive)" else \
+                      round_robin(process_data) if selected_algorithm == "RR" else \
+                      preemptive_priority(process_data)
+
+            # Draw ready queue
+            x_offset = 10
+            for process in results:
+                process_id = process[0]
+                canvas.create_rectangle(x_offset, 50, x_offset + 50, 100, fill="blue")
+                canvas.create_text(x_offset + 25, 75, text=process_id, fill="white")
+                x_offset += 60
+    except Exception as e:
+        print(f"Error in generate_ready_queue: {e}")
+
 # Call the method to generate the Ready Queue
 generate_ready_queue()
 
