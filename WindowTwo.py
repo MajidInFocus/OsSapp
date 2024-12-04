@@ -59,7 +59,7 @@ subtitle_label = Label(
 subtitle_label.grid(row=1, column=0, pady=0, sticky="n")
 
 # Image Section
-image = Image.open("testimonial-1.png")
+image = Image.open("logo1.png")
 image = image.resize((300, 300), Image.LANCZOS)
 image_tk = ImageTk.PhotoImage(image)
 image_label = Label(header_container, image=image_tk, bg="white")
@@ -271,7 +271,7 @@ def open_simulation_window():
 
 #================================================================================================
 # create a label for image to be placed in the button "simulate"
-simulate_icon = Image.open("testimonial-1.png")
+simulate_icon = Image.open("Simulate.png")
 simulate_icon = simulate_icon.resize((300, 150), Image.LANCZOS)
 simulate_icon_tk = ImageTk.PhotoImage(simulate_icon)
 
@@ -303,7 +303,7 @@ simulate_button.config(command=open_simulation_window)
 
 #Create an info button about table generation and its headings abreveations
 # Create label for the info icon to be placed in the button "info"
-info_icon = Image.open("testimonial-1.png")
+info_icon = Image.open("info.png")
 info_icon = info_icon.resize((320, 80), Image.LANCZOS)
 info_icon_tk = ImageTk.PhotoImage(info_icon)
 

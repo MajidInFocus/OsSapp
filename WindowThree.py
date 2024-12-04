@@ -293,8 +293,8 @@ def generate_gantt_chart():
     canvas.delete("all")
 
     # Fetch and process data for the Gantt chart
-    process_data = shared_data['process_data']
-    selected_algorithm = shared_data['selected_algorithm']
+    process_data = shared_data.get('process_data', [])
+    selected_algorithm = shared_data.get('selected_algorithm', '')
 
     if selected_algorithm in ["SJF (Non-Preemptive)", "SJF (Preemptive)", "RR", "Preemptive (Priority)"]:
         results = sjf_non_preemptive(process_data) if selected_algorithm == "SJF (Non-Preemptive)" else \
